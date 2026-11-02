@@ -1,30 +1,10 @@
-# app.py
 import streamlit as st
 
-# 设置手机友好布局
-st.set_page_config(page_title="意象盲盒答题", layout="centered")
+# 页面基础设置，适配手机
+st.set_page_config(page_title="意象诗句盲盒", layout="centered")
+st.title("🎨 意象诗句盲盒测试")
 
-# ----------------题库设置----------------
-questions = [
-    {
-        "cate": "颜色",
-        "title": "你偏爱哪一种色调？",
-        "options": ["清冷月白", "沉郁赭红", "远山青黛"]
-    },
-    {
-        "cate": "诗句",
-        "title": "哪一句诗句最打动你？",
-        "options": ["孤舟蓑笠翁，独钓寒江雪", "春风又绿江南岸", "大漠孤烟直，长河落日圆"]
-    },
-    {
-        "cate": "意象",
-        "title": "更喜欢哪一种古典意象？",
-        "options": ["梧桐", "明月", "落花"]
-    }
-]
-
-# 盲盒结果（这里img填入你上传到图床后的图片在线地址）
-# 盲盒结果（直接读取仓库里的本地图片）
+# ===================== 8组意象结果（i1~i8全部用上）=====================
 box_result = [
     {
         "name": "寒江孤雪",
@@ -40,41 +20,67 @@ box_result = [
         "name": "大漠长河",
         "desc": "辽阔苍茫，大气磅礴",
         "img": "i3.jpg"
+    },
+    {
+        "name": "春山雾霭",
+        "desc": "草木朦胧，温润松弛",
+        "img": "i4.jpg"
+    },
+    {
+        "name": "深海星落",
+        "desc": "沉静深邃，藏着无人知晓的浪漫",
+        "img": "i5.jpg"
+    },
+    {
+        "name": "云间长风",
+        "desc": "自由舒展，无拘无束",
+        "img": "i6.jpg"
+    },
+    {
+        "name": "枫林晚渡",
+        "desc": "热烈而温柔，暮色缓缓降临",
+        "img": "i7.jpg"
+    },
+    {
+        "name": "旷野晨光",
+        "desc": "新生的力量，明朗干净",
+        "img": "i8.jpg"
     }
 ]
 
-# 页面状态记忆
-if "current_q" not in st.session_state:
-    st.session_state.current_q = 0
-if "sum_score" not in st.session_state:
-    st.session_state.sum_score = 0
+# ===================== 选择题部分（你可以后续修改题目）=====================
+# 使用session_state保存答题状态
+if "score" not in st.session_state:
+    st.session_state.score = 0
+if "finish" not in st.session_state:
+    st.session_state.finish = False
 
-step = st.session_state.current_q
+if not st.session_state.finish:
+    st.subheader("回答下面的题目，抽取属于你的意象")
+    q1 = st.radio("❶ 你更喜欢哪一类色调？", ["清冷蓝紫", "温润暖黄", "苍茫大地色", "朦胧青绿色"])
+    q2 = st.radio("❷ 读到诗句，你更偏爱？", ["孤舟寒雪", "山间明月", "长河落日", "雾里春山"])
+    q3 = st.radio("❸ 内心向往的状态？", ["安静独处", "自在漫游", "热烈奔赴", "温柔松弛"])
 
-if step < len(questions):
-    q = questions[step]
-    st.subheader(f"第{step+1}题｜{q['cate']}")
-    st.write(q["title"])
-    user_choice = st.radio("请选择：", q["options"])
-    if st.button("确认，下一题"):
-        # 根据选项累加分数
-        st.session_state.sum_score += q["options"].index(user_choice)
-        st.session_state.current_q += 1
+    if st.button("开启你的意象盲盒✨"):
+        # 根据选择计算分数
+        ans_list = [q1,q2,q3]
+        score = 0
+        for a in ans_list:
+            score += len(a)
+        # 将分数映射到 0~7，对应8个结果索引
+        idx = score % 8
+        st.session_state.score = idx
+        st.session_state.finish = True
         st.rerun()
 else:
+    # 展示抽到的盲盒结果
+    res = box_result[st.session_state.score]
     st.header("🎁 你的意象盲盒已开启！")
-    score = st.session_state.sum_score
-    # 根据总分匹配盲盒
-    if score <= 2:
-        res = box_result[0]
-    elif score <=5:
-        res = box_result[1]
-    else:
-        res = box_result[2]
     st.subheader(res["name"])
     st.write(res["desc"])
     st.image(res["img"])
+
+    # 重新游玩按钮，重置状态
     if st.button("🔄 重新玩一次"):
-        st.session_state.current_q = 0
-        st.session_state.sum_score = 0
+        st.session_state.finish = False
         st.rerun()

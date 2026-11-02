@@ -1,10 +1,10 @@
 import streamlit as st
 
-# 页面基础设置，适配手机
-st.set_page_config(page_title="意象诗句盲盒", layout="centered")
-st.title("🎨 意象诗句盲盒测试")
+# 页面设置，适配手机
+st.set_page_config(page_title="意象盲盒答题", layout="centered")
+st.title("🎨 意象诗句盲盒")
 
-# ===================== 8组意象结果（i1~i8全部用上）=====================
+# ========== 8组意象结果（i1 ~ i8） ==========
 box_result = [
     {
         "name": "寒江孤雪",
@@ -48,39 +48,42 @@ box_result = [
     }
 ]
 
-# ===================== 选择题部分（你可以后续修改题目）=====================
-# 使用session_state保存答题状态
-if "score" not in st.session_state:
-    st.session_state.score = 0
-if "finish" not in st.session_state:
-    st.session_state.finish = False
+# ========== 答题状态初始化 ==========
+if "result_index" not in st.session_state:
+    st.session_state.result_index = 0
+if "finished" not in st.session_state:
+    st.session_state.finished = False
 
-if not st.session_state.finish:
-    st.subheader("回答下面的题目，抽取属于你的意象")
-    q1 = st.radio("❶ 你更喜欢哪一类色调？", ["清冷蓝紫", "温润暖黄", "苍茫大地色", "朦胧青绿色"])
-    q2 = st.radio("❷ 读到诗句，你更偏爱？", ["孤舟寒雪", "山间明月", "长河落日", "雾里春山"])
-    q3 = st.radio("❸ 内心向往的状态？", ["安静独处", "自在漫游", "热烈奔赴", "温柔松弛"])
+if not st.session_state.finished:
+    st.subheader("回答题目，抽取属于你的专属意象")
 
-    if st.button("开启你的意象盲盒✨"):
-        # 根据选择计算分数
-        ans_list = [q1,q2,q3]
-        score = 0
-        for a in ans_list:
-            score += len(a)
-        # 将分数映射到 0~7，对应8个结果索引
-        idx = score % 8
-        st.session_state.score = idx
-        st.session_state.finish = True
+    # 三道选择题，保存选项列表，用来获取选中序号
+    opt1 = ["清冷蓝紫", "温润暖黄", "苍茫大地色", "朦胧青绿色"]
+    opt2 = ["孤舟寒雪", "山间明月", "长河落日", "雾里春山"]
+    opt3 = ["安静独处", "自在漫游", "热烈奔赴", "温柔松弛"]
+
+    q1 = st.radio("❶ 你更偏爱哪一类色调？", opt1)
+    q2 = st.radio("❷ 读到诗句，你更偏爱哪一种意境？", opt2)
+    q3 = st.radio("❸ 内心向往的生活状态？", opt3)
+
+    if st.button("✨开启意象盲盒"):
+        # 获取每一题选中的索引（0开始）
+        idx1 = opt1.index(q1)
+        idx2 = opt2.index(q2)
+        idx3 = opt3.index(q3)
+        # 叠加计算，保证组合更多，可以覆盖0~7全部8个索引
+        total = idx1 * 16 + idx2 * 4 + idx3
+        st.session_state.result_index = total % 8
+        st.session_state.finished = True
         st.rerun()
-else:
-    # 展示抽到的盲盒结果
-    res = box_result[st.session_state.score]
-    st.header("🎁 你的意象盲盒已开启！")
-    st.subheader(res["name"])
-    st.write(res["desc"])
-    st.image(res["img"])
 
-    # 重新游玩按钮，重置状态
+else:
+    selected = box_result[st.session_state.result_index]
+    st.header("🎁 你的意象盲盒已开启！")
+    st.subheader(selected["name"])
+    st.write(selected["desc"])
+    st.image(selected["img"])
+
     if st.button("🔄 重新玩一次"):
-        st.session_state.finish = False
+        st.session_state.finished = False
         st.rerun()
